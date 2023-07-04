@@ -1,0 +1,23 @@
+[package]
+name = "rtkill"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ilingu"]
+rust-version = "1.56.1"
+description = "It deletes rust 'target' folders"
+readme = "README.md"
+repository = "https://github.com/Ilingu/rtkill"
+homepage = "https://github.com/Ilingu/rtkill"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["target", "rtkill", ""]
+categories = ["command-line-interface", "filesystem"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.71"
+chrono = "0.4.26"
+crossterm = "0.26.1"
+toml = "0.7.5"
+tui = "0.19.0"
