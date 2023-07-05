@@ -42,7 +42,7 @@ fn main() -> Result<()> {
     )?;
 
     if let Err(e) = app_quit_result {
-        println!("{}", e);
+        eprintln!("{e}");
     }
     Ok(())
 }

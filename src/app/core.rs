@@ -8,7 +8,10 @@ use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
 use toml::Table;
 
-use crate::utils::sharable_state::SharableState;
+use crate::{
+    ui::components::message::{Message, MessageType},
+    utils::sharable_state::SharableState,
+};
 
 use super::{AppState, TargetDir};
 
@@ -29,6 +32,25 @@ impl SharableState<AppState> {
         self.mutate(|data| data.searching = searching);
     }
 
+    pub fn prev_item(&self) {
+        self.mutate(|data| data.target_directories.previous())
+    }
+
+    pub fn next_item(&self) {
+        self.mutate(|data| data.target_directories.next())
+    }
+
+    pub fn delete_current_item(&self) {
+        self.mutate(|data| {
+            let current_idx = data.target_directories.index;
+            let _ = data.target_directories.datas[current_idx].delete();
+        })
+    }
+
+    pub fn set_message(&self, message: Option<Message>) {
+        self.mutate(|data| data.message = message)
+    }
+
     pub fn search(&self) {
         self.set_searching(true);
         let (tx, rx) = mpsc::channel::<TraverseMsg>();
@@ -38,16 +60,31 @@ impl SharableState<AppState> {
             let _ = find_target_dirs(path, tx.clone());
             let _ = tx.send(TraverseMsg::Exit);
         });
+
+        let mut is_empty = true;
         for data in rx {
             match data {
-                TraverseMsg::Data(target) => self.push_to_list(target),
-                TraverseMsg::Exit => return self.set_searching(false),
+                TraverseMsg::Data(target) => {
+                    is_empty = false;
+                    self.push_to_list(target);
+                }
+                TraverseMsg::Exit => break,
             }
         }
+
+        if is_empty {
+            self.set_message(Some(Message::new(
+                "There is no 'target' directories in this scope",
+                MessageType::Warning,
+                None,
+            )));
+        }
+        self.set_searching(false);
     }
 }
 
 fn find_target_dirs(path: String, tx: Sender<TraverseMsg>) -> Result<()> {
+    // thread::sleep(Duration::from_millis(1));
     if let Ok(entries) = fs::read_dir(&path) {
         let entries = entries
             .into_iter()
@@ -82,6 +119,7 @@ fn find_target_dirs(path: String, tx: Sender<TraverseMsg>) -> Result<()> {
                 path: target.path().to_str().unwrap_or_default().to_string(),
                 project_name,
                 last_modified: last_modified.format("%d/%m/%Y %T").to_string(),
+                is_deleted: false,
             };
             let _ = tx.send(TraverseMsg::Data(target_dir));
             return Ok(());

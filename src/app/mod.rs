@@ -1,14 +1,22 @@
 mod core;
 mod parse;
 
-use std::{sync::Arc, thread};
+use std::{
+    fs,
+    sync::Arc,
+    thread,
+    time::{Duration, Instant},
+};
 
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
 use tui::{backend::Backend, Terminal};
 
 use crate::{
-    ui::{components::list_with_state::ListWithState, ui},
+    ui::{
+        components::{list_with_state::ListWithState, message::Message},
+        ui,
+    },
     utils::sharable_state::SharableState,
 };
 
@@ -17,6 +25,15 @@ pub struct TargetDir {
     pub path: String,
     pub project_name: String,
     pub last_modified: String,
+    pub is_deleted: bool,
+}
+
+impl TargetDir {
+    pub fn delete(&mut self) -> Result<()> {
+        fs::remove_dir_all(self.path.clone())?;
+        self.is_deleted = true;
+        Ok(())
+    }
 }
 
 #[derive(Default)]
@@ -24,6 +41,7 @@ pub struct AppState {
     pub root_dir: String,
     pub target_directories: ListWithState<TargetDir>,
     pub searching: bool,
+    pub message: Option<Message>,
 }
 
 pub fn run_app<B: Backend>(
@@ -36,19 +54,37 @@ pub fn run_app<B: Backend>(
         thread::spawn(move || state_search.search());
     }
 
+    let mut last_time_user_active = Instant::now();
     loop {
-        println!("{:?}", state.read().target_directories.datas.len());
-        terminal.draw(|f| ui(f, &state))?;
+        let current_appstate = Arc::new(state.read()); // I wrap it in Arc to prevent calling the read unsafe function several times within a frame (loop iteration), like this data is updated once every frame
 
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => return Ok(()),
-                KeyCode::Up => (),
-                KeyCode::Down => (),
-                KeyCode::Left => (),
-                KeyCode::Right => (),
-                _ => (),
-            };
+        // build and show ui
+        let ui_state = Arc::clone(&current_appstate);
+        terminal.draw(|f| ui(f, &ui_state))?;
+
+        // check message deletion
+        if let Some(msg) = &current_appstate.message {
+            if msg.should_be_deleted() {
+                state.set_message(None);
+            }
+        }
+
+        // check events
+        let refresh_rate = match last_time_user_active.elapsed().as_secs() >= 10 {
+            true => 1000,
+            false => 100,
+        }; // if user active, refresh view every 1 second, otherwise 10 time per second
+        if event::poll(Duration::from_millis(refresh_rate))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char('q') => return Ok(()),
+                    KeyCode::Up => state.prev_item(),
+                    KeyCode::Right => state.next_item(),
+                    KeyCode::Char(' ') => {}
+                    _ => (),
+                };
+            }
+            last_time_user_active = Instant::now();
         }
     }
 }

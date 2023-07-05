@@ -1,4 +1,8 @@
+use tui::widgets::ListItem;
+
 use crate::app::TargetDir;
+
+use super::Renderer;
 
 #[derive(Default)]
 pub struct ListWithState<T> {
@@ -21,6 +25,8 @@ impl<T> ListWithState<T> {
     }
 }
 
-impl ListWithState<TargetDir> {
-    pub fn render(&self) {}
+impl Renderer<Vec<ListItem<'static>>> for ListWithState<TargetDir> {
+    fn render(&self) -> Vec<ListItem<'static>> {
+        vec![]
+    }
 }
