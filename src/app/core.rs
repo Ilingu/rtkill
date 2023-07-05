@@ -8,7 +8,9 @@ use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
 use toml::Table;
 
-use super::{RTKill, TargetDir};
+use crate::utils::sharable_state::SharableState;
+
+use super::{AppState, TargetDir};
 
 #[derive(Debug)]
 enum TraverseMsg {
@@ -16,23 +18,32 @@ enum TraverseMsg {
     Exit,
 }
 
-impl RTKill {
-    pub fn search(&mut self) -> Result<()> {
+impl SharableState<AppState> {
+    pub fn push_to_list(&self, target: TargetDir) {
+        self.mutate(|data| {
+            data.target_directories.datas.push(target);
+        });
+    }
+
+    pub fn set_searching(&self, searching: bool) {
+        self.mutate(|data| data.searching = searching);
+    }
+
+    pub fn search(&self) {
+        self.set_searching(true);
         let (tx, rx) = mpsc::channel::<TraverseMsg>();
 
-        let path = self.root_dir.clone();
+        let path = self.read().root_dir.clone();
         thread::spawn(move || {
             let _ = find_target_dirs(path, tx.clone());
             let _ = tx.send(TraverseMsg::Exit);
         });
         for data in rx {
             match data {
-                TraverseMsg::Data(target) => self.target_directories.datas.push(target),
-                TraverseMsg::Exit => break,
+                TraverseMsg::Data(target) => self.push_to_list(target),
+                TraverseMsg::Exit => return self.set_searching(false),
             }
         }
-
-        Ok(())
     }
 }
 

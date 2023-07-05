@@ -2,9 +2,9 @@ use std::{env, fs};
 
 use anyhow::{anyhow, Result};
 
-use super::RTKill;
+use super::AppState;
 
-impl RTKill {
+impl AppState {
     pub fn from_cd() -> Result<Self> {
         let root_dir = env::current_dir()?
             .to_str()
