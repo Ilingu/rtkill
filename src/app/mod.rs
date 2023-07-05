@@ -20,12 +20,13 @@ use crate::{
     utils::sharable_state::SharableState,
 };
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct TargetDir {
     pub path: String,
     pub project_name: String,
     pub last_modified: String,
     pub is_deleted: bool,
+    pub size: String,
 }
 
 impl TargetDir {
@@ -79,8 +80,8 @@ pub fn run_app<B: Backend>(
                 match key.code {
                     KeyCode::Char('q') => return Ok(()),
                     KeyCode::Up => state.prev_item(),
-                    KeyCode::Right => state.next_item(),
-                    KeyCode::Char(' ') => {}
+                    KeyCode::Down => state.next_item(),
+                    KeyCode::Char(' ') => state.delete_current_item(),
                     _ => (),
                 };
             }

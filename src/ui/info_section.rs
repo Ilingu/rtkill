@@ -25,7 +25,10 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
         .split(chunks[1]);
 
     if let Some(message) = &state.message {
-        f.render_widget(message.render().alignment(Alignment::Center), sub_chunck[0]);
+        f.render_widget(
+            message.render_items().unwrap().alignment(Alignment::Center),
+            sub_chunck[0],
+        );
     } else if state.searching {
         f.render_widget(
             Paragraph::new(format!(
@@ -64,6 +67,11 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
             Span::styled("Action: ", Style::default().add_modifier(Modifier::ITALIC)),
             Span::styled(
                 "Space (Delete)",
+                Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+            ),
+            Span::raw(", "),
+            Span::styled(
+                "q (Quit)",
                 Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
             ),
         ]))

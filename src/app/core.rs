@@ -2,6 +2,7 @@ use std::{
     fs,
     sync::mpsc::{self, Sender},
     thread,
+    time::Duration,
 };
 
 use anyhow::{anyhow, Result};
@@ -10,7 +11,7 @@ use toml::Table;
 
 use crate::{
     ui::components::message::{Message, MessageType},
-    utils::sharable_state::SharableState,
+    utils::{bytes_len_to_string_prefix, sharable_state::SharableState},
 };
 
 use super::{AppState, TargetDir};
@@ -41,10 +42,32 @@ impl SharableState<AppState> {
     }
 
     pub fn delete_current_item(&self) {
+        let (sender, receiver) = mpsc::channel::<bool>();
         self.mutate(|data| {
             let current_idx = data.target_directories.index;
-            let _ = data.target_directories.datas[current_idx].delete();
-        })
+            let is_deleted = data.target_directories.datas[current_idx].delete().is_ok();
+            let _ = sender.send(is_deleted);
+        });
+
+        match receiver.recv_timeout(Duration::from_millis(500)) {
+            Ok(is_ok) => match is_ok {
+                true => self.set_message(Some(Message::new(
+                    "Successfully deleted folder",
+                    MessageType::Success,
+                    Some(Duration::from_secs(3)),
+                ))),
+                false => self.set_message(Some(Message::new(
+                    "Failed to delete folder, try again...",
+                    MessageType::Error,
+                    None,
+                ))),
+            },
+            Err(_) => self.set_message(Some(Message::new(
+                "Failed to delete folder, try again...",
+                MessageType::Error,
+                None,
+            ))),
+        };
     }
 
     pub fn set_message(&self, message: Option<Message>) {
@@ -114,12 +137,17 @@ fn find_target_dirs(path: String, tx: Sender<TraverseMsg>) -> Result<()> {
                 .map(|(_, val)| val.as_str().unwrap().to_string())
                 .ok_or(anyhow!(""))?;
 
-            let last_modified: DateTime<Utc> = target.metadata()?.modified()?.into();
+            let metadata = target.metadata()?;
+
+            let last_modified: DateTime<Utc> = metadata.modified()?.into();
+            let formated_size = bytes_len_to_string_prefix(metadata.len());
+
             let target_dir = TargetDir {
                 path: target.path().to_str().unwrap_or_default().to_string(),
                 project_name,
                 last_modified: last_modified.format("%d/%m/%Y %T").to_string(),
                 is_deleted: false,
+                size: formated_size,
             };
             let _ = tx.send(TraverseMsg::Data(target_dir));
             return Ok(());

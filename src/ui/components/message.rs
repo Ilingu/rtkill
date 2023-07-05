@@ -39,14 +39,16 @@ impl Message {
 }
 
 impl Renderer<Paragraph<'static>> for Message {
-    fn render(&self) -> Paragraph<'static> {
+    fn render_items(&self) -> Option<Paragraph<'static>> {
         let color = match self.msg_type {
             MessageType::Success => Color::from_hex("#2ecc71").unwrap(),
             MessageType::Info => Color::from_hex("#3498db").unwrap(),
-            MessageType::Warning => Color::from_hex("#f1c40f").unwrap(),
+            MessageType::Warning => Color::from_hex("#f1c90f").unwrap(),
             MessageType::Error => Color::from_hex("#e74c3c").unwrap(),
         };
-        Paragraph::new(self.msg_text.clone())
-            .style(Style::default().fg(color).add_modifier(Modifier::BOLD))
+        Some(
+            Paragraph::new(self.msg_text.clone())
+                .style(Style::default().fg(color).add_modifier(Modifier::BOLD)),
+        )
     }
 }
