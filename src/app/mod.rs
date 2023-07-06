@@ -91,10 +91,13 @@ pub fn run_app<B: Backend>(
                     KeyCode::Down => state.next_item(),
                     KeyCode::Char(' ') => state.delete_current_item(),
                     KeyCode::Char('r') => {
-                        state.clear_list();
-                        {
-                            let state_search = Arc::clone(&state);
-                            thread::spawn(move || state_search.search());
+                        // to avoid user to spam refresh, which could cause memory issue
+                        if !current_appstate.searching {
+                            state.clear_list();
+                            {
+                                let state_search = Arc::clone(&state);
+                                thread::spawn(move || state_search.search());
+                            }
                         }
                     }
                     _ => (),
