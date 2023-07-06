@@ -16,7 +16,7 @@ But keeping track of every rust projects can be very **tedious** (if you watch t
 
 So I made this tui app that will scan recursively the folder you specified to find any 'target' rust folders, it'll then shows the result on screen where you'll be able to choose whichever you want to delete.
 
-**Be careful**, when you press `space` on the one you select, it **instantaneously** delete it, it does not mark it for deletion, if you press `space`, it's gone <ins>**forever**</ins>
+**Be careful**, when you press `space` on the one you've selected, it **instantaneously** delete it, it does not mark it for deletion, if you press `space`, it's gone <ins>**forever**</ins>
 
 ## Purpose
 
