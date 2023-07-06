@@ -33,7 +33,7 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
         f.render_widget(
             Paragraph::new(format!(
                 "Searching 'target' directories ⏳ Search scope: {}",
-                state.root_dir
+                state.root_dir.clone().unwrap_or("undefined".to_string())
             ))
             .alignment(Alignment::Center),
             sub_chunck[0],
@@ -47,6 +47,12 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
                     Style::default().add_modifier(Modifier::BOLD),
                 ),
                 Span::raw(" 'target' directories"),
+                Span::raw(" // "),
+                Span::raw("Total size: "),
+                Span::styled(
+                    state.total_size.clone(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
             ]))
             .alignment(Alignment::Center),
             sub_chunck[0],
@@ -72,6 +78,11 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
             Span::raw(", "),
             Span::styled(
                 "q (Quit)",
+                Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+            ),
+            Span::raw(", "),
+            Span::styled(
+                "r (Refresh)",
                 Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
             ),
         ]))

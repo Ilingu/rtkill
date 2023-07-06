@@ -1,12 +1,6 @@
-use std::{
-    fs::{self, OpenOptions},
-    thread,
-};
-
 use anyhow::{anyhow, Result};
 use number_prefix::NumberPrefix;
 use rand::{thread_rng, Rng};
-use std::io::Write;
 use tui::style::Color;
 
 pub mod sharable_state;
@@ -31,7 +25,15 @@ pub fn bytes_len_to_string_prefix(bin_size: u64) -> String {
     }
 }
 
+/* Only when developping, because tuirs takes ownership of the terminal screen, I can't log anything when debuging, so I write the debug content in a file
 pub fn log_print(log: String) {
+    use std::{
+        fs::{self, OpenOptions},
+        thread,
+    };
+    use std::io::Write;
+
+
     thread::spawn(move || {
         dotenv::dotenv().unwrap();
         let path_str = format!("/home/{}/.cache/rtkill", dotenv::var("USER").unwrap());
@@ -52,6 +54,7 @@ pub fn log_print(log: String) {
         let _ = writeln!(file, "{log}");
     });
 }
+*/
 
 pub trait FromHex {
     fn from_hex(hex: &str) -> Result<Color>;

@@ -14,7 +14,10 @@ use tui::{backend::Backend, Terminal};
 
 use crate::{
     ui::{
-        components::{list_with_state::ListWithState, message::Message},
+        components::{
+            list_with_state::ListWithState,
+            message::{Message, MessageAction},
+        },
         ui,
     },
     utils::sharable_state::SharableState,
@@ -39,10 +42,11 @@ impl TargetDir {
 
 #[derive(Default)]
 pub struct AppState {
-    pub root_dir: String,
+    pub root_dir: Option<String>,
     pub target_directories: ListWithState<TargetDir>,
     pub searching: bool,
     pub message: Option<Message>,
+    pub total_size: String,
 }
 
 pub fn run_app<B: Backend>(
@@ -66,6 +70,10 @@ pub fn run_app<B: Backend>(
         // check message deletion
         if let Some(msg) = &current_appstate.message {
             if msg.should_be_deleted() {
+                if let Some(MessageAction::Quit) = &msg.action_when_deleted {
+                    return Ok(());
+                }
+
                 state.set_message(None);
             }
         }
@@ -82,6 +90,13 @@ pub fn run_app<B: Backend>(
                     KeyCode::Up => state.prev_item(),
                     KeyCode::Down => state.next_item(),
                     KeyCode::Char(' ') => state.delete_current_item(),
+                    KeyCode::Char('r') => {
+                        state.clear_list();
+                        {
+                            let state_search = Arc::clone(&state);
+                            thread::spawn(move || state_search.search());
+                        }
+                    }
                     _ => (),
                 };
             }

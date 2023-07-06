@@ -15,21 +15,31 @@ pub enum MessageType {
     Warning,
     Error,
 }
+pub enum MessageAction {
+    Quit,
+}
 
 pub struct Message {
     msg_text: String,
     msg_type: MessageType,
     duration: Duration,
     creation_date: Instant,
+    pub action_when_deleted: Option<MessageAction>,
 }
 
 impl Message {
-    pub fn new(msg_text: &str, msg_type: MessageType, duration: Option<Duration>) -> Self {
+    pub fn new(
+        msg_text: &str,
+        msg_type: MessageType,
+        duration: Option<Duration>,
+        action: Option<MessageAction>,
+    ) -> Self {
         Self {
             msg_text: msg_text.to_string(),
             msg_type,
             duration: duration.unwrap_or(Duration::from_secs(5)),
             creation_date: Instant::now(),
+            action_when_deleted: action,
         }
     }
 

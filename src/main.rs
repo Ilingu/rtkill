@@ -22,12 +22,7 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // initial state
-    let state = match AppState::from_args() {
-        Ok(d) => d,
-        Err(_) => {
-            AppState::from_cd().expect("Couldn't get your current directory, please provide it")
-        }
-    };
+    let state = AppState::new().expect("Couldn't get your current directory, please provide it");
     let sharable_state = Arc::new(SharableState::new(state));
 
     // app launch

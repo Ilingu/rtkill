@@ -7,10 +7,7 @@ use tui::{
     Frame,
 };
 
-use crate::{
-    app::TargetDir,
-    utils::{log_print, FromHex},
-};
+use crate::{app::TargetDir, utils::FromHex};
 
 use super::Renderer;
 
@@ -72,10 +69,13 @@ impl Renderer<()> for ListWithState<TargetDir> {
             let sub_chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([
-                    Constraint::Percentage(10),
-                    Constraint::Percentage(75),
-                    Constraint::Percentage(10),
-                    Constraint::Percentage(5),
+                    Constraint::Percentage(20), // 0: name
+                    Constraint::Percentage(1),  // separator
+                    Constraint::Percentage(65), // 2: path
+                    Constraint::Percentage(1),  // separator
+                    Constraint::Percentage(7),  // 4: last modified
+                    Constraint::Percentage(1),  // separator
+                    Constraint::Percentage(5),  // 6: size
                 ])
                 .split(*area);
 
@@ -91,12 +91,12 @@ impl Renderer<()> for ListWithState<TargetDir> {
                 },
                 sub_chunks[0],
             );
-            f.render_widget(Paragraph::new(item_data.path.clone()), sub_chunks[1]);
+            f.render_widget(Paragraph::new(item_data.path.clone()), sub_chunks[2]);
             f.render_widget(
                 Paragraph::new(item_data.last_modified.clone()),
-                sub_chunks[2],
+                sub_chunks[4],
             );
-            f.render_widget(Paragraph::new(item_data.size.clone()), sub_chunks[3]);
+            f.render_widget(Paragraph::new(item_data.size.clone()), sub_chunks[6]);
         }
     }
 }
