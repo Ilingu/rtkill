@@ -2,7 +2,7 @@
 
 #### ➡ An interactive terminal user iterface (TUI), that search and delete 'rust /target folders'.
 
-https://github.com/Ilingu/rtkill/assets/57411599/b0872952-57ae-46d8-9b66-da64a67cf474
+https://github.com/Ilingu/rtkill/assets/57411599/875e31d1-bf5e-4c21-8a95-0dbb55cb3f03
 
 ## Origin
 
