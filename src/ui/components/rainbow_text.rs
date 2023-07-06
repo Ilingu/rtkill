@@ -18,6 +18,15 @@ lazy_static! {
     ];
 }
 
+/// create a raibow text
+///
+/// it return a collection of Span (Spans), to display it use can use a widget like `Paragraph`
+///
+/// e.g:
+///
+/// ```
+/// Paragraph::new(rainbow_text("rainbow!"));
+/// ```
 pub fn rainbow_text(text: &str) -> Spans<'static> {
     let mut colored_text: Vec<Span> = vec![];
     for (i, ch) in text.chars().enumerate() {

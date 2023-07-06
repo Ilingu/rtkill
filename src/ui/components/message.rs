@@ -15,10 +15,13 @@ pub enum MessageType {
     Warning,
     Error,
 }
+
+/// Action to take when the message is deleted
 pub enum MessageAction {
     Quit,
 }
 
+/// Describe an app message
 pub struct Message {
     msg_text: String,
     msg_type: MessageType,

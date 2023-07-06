@@ -15,6 +15,7 @@ use tui::{
     Frame,
 };
 
+/// root function to build and draw on the screen all the app ui
 pub fn ui<B: Backend>(f: &mut Frame<B>, state: &AppState) {
     let parent_chunk = Layout::default()
         .direction(Direction::Vertical)

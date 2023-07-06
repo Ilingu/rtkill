@@ -2,9 +2,13 @@ use anyhow::{anyhow, Result};
 use number_prefix::NumberPrefix;
 use rand::{thread_rng, Rng};
 use tui::style::Color;
+mod tests;
 
 pub mod sharable_state;
 
+/// generate a random **light** color
+///
+///  i.e: all the rgb value are between 128 and 255
 pub fn generate_random_color() -> Color {
     let mut rng = thread_rng();
     Color::Rgb(
@@ -61,6 +65,7 @@ pub trait FromHex {
 }
 
 impl FromHex for Color {
+    /// personal helper function to convert hex value to rbg and then create a tui Color (which only accept rgb values)
     fn from_hex(hex: &str) -> Result<Color> {
         let safe_hex = hex.trim().trim_start_matches('#').trim_start_matches("0x");
 

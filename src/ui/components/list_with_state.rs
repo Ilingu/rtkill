@@ -33,11 +33,13 @@ impl<T> ListWithState<T> {
 }
 
 impl Renderer<()> for ListWithState<TargetDir> {
+    /// takes a screen chunk and draw in it the target items components
     fn render_and_draw_items<B: Backend>(&self, f: &mut Frame<B>, chunks: Vec<Rect>) {
         if self.datas.is_empty() {
             return;
         }
 
+        // all items cannot be displayed on screen thus this wil choose which items to display based on where is the currently selected one, it works by 'room': it search in which interval of "n" items the currently selected one is and display this interval
         let items_range = {
             let (mut inf, mut sup) = (0, chunks.len());
             while !(inf <= self.index + 1 && self.index < sup) {
@@ -52,6 +54,7 @@ impl Renderer<()> for ListWithState<TargetDir> {
             inf..sup
         };
 
+        // for each items, render it's component
         let items = self.datas.iter().enumerate().collect::<Vec<_>>()[items_range].to_vec();
         for (slot_id, area) in chunks.iter().enumerate() {
             if slot_id >= items.len() {
@@ -79,6 +82,7 @@ impl Renderer<()> for ListWithState<TargetDir> {
                 ])
                 .split(*area);
 
+            // "[DELETED]" if user has deleted this target folder otherwise the project name
             f.render_widget(
                 match item_data.is_deleted {
                     true => Paragraph::new(Span::styled(
@@ -91,11 +95,12 @@ impl Renderer<()> for ListWithState<TargetDir> {
                 },
                 sub_chunks[0],
             );
-            f.render_widget(Paragraph::new(item_data.path.clone()), sub_chunks[2]);
+            f.render_widget(Paragraph::new(item_data.path.clone()), sub_chunks[2]); // target path
             f.render_widget(
-                Paragraph::new(item_data.last_modified.clone()),
+                Paragraph::new(item_data.last_modified.clone()), // last modified
                 sub_chunks[4],
             );
+            // target size
             f.render_widget(Paragraph::new(item_data.size.clone()), sub_chunks[6]);
         }
     }

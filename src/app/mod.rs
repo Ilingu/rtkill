@@ -8,7 +8,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use crossterm::event::{self, Event, KeyCode};
 use tui::{backend::Backend, Terminal};
 
@@ -23,23 +23,34 @@ use crate::{
     utils::sharable_state::SharableState,
 };
 
+/// Desscribes a rust 'target' folder
 #[derive(Default, Debug, Clone)]
 pub struct TargetDir {
+    /// where it's located in the user disk
     pub path: String,
+    /// rust associated project name in the Cargo.toml
     pub project_name: String,
     pub last_modified: String,
+    /// Is user deleted the target file
     pub is_deleted: bool,
+    /// formatted size of the folder, e.g: "5 GiB", "28 KiB"...
     pub size: String,
 }
 
 impl TargetDir {
+    /// deletes permanently the folder from the user disk
     pub fn delete(&mut self) -> Result<()> {
+        if self.is_deleted {
+            return Err(anyhow!("folder already deleted"));
+        }
+
         fs::remove_dir_all(self.path.clone())?;
         self.is_deleted = true;
         Ok(())
     }
 }
 
+/// Application public variables, persist after frame rebuild
 #[derive(Default)]
 pub struct AppState {
     pub root_dir: Option<String>,
@@ -49,6 +60,7 @@ pub struct AppState {
     pub total_size: String,
 }
 
+/// launch app, and begin frame
 pub fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     state: Arc<SharableState<AppState>>,

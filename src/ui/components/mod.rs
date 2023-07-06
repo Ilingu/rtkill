@@ -5,6 +5,7 @@ pub mod logo;
 pub mod message;
 pub mod rainbow_text;
 
+/// simple trait to origanize how component renders their ui
 pub trait Renderer<T> {
     fn render_items(&self) -> Option<T> {
         None

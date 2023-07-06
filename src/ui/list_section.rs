@@ -8,6 +8,7 @@ use crate::app::AppState;
 
 use super::components::Renderer;
 
+/// draw ui for the list of target dirs
 pub fn draw_list_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)

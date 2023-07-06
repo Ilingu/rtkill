@@ -7,6 +7,11 @@ use crate::ui::components::message::{Message, MessageAction, MessageType};
 use super::AppState;
 
 impl AppState {
+    /// parse and check the scope/root directory (specified or not by the user) and then initialize app state
+    ///
+    /// check for user specified directory, if one is found and it's valid create app state
+    ///
+    /// otherwise, get the current directory the app is spawned in
     pub fn new() -> Result<Self> {
         match Self::from_args() {
             Ok(app) => Ok(app),
@@ -42,6 +47,7 @@ impl AppState {
         }
     }
 
+    /// create app state from the current directory
     pub fn from_cd() -> Result<Self> {
         let root_dir = env::current_dir()?
             .to_str()
@@ -54,6 +60,7 @@ impl AppState {
         })
     }
 
+    /// create app state from the user specified directory
     pub fn from_args() -> Result<Self> {
         let args = env::args().skip(1).collect::<Vec<_>>();
         if args.len() != 1 {
