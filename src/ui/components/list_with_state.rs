@@ -18,6 +18,9 @@ pub struct ListWithState<T> {
 }
 
 impl<T> ListWithState<T> {
+    pub fn current(&self) -> &T {
+        &self.datas[self.index]
+    }
     pub fn next(&mut self) {
         match self.index >= self.datas.len() - 1 {
             true => self.index = 0,

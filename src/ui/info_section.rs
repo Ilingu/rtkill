@@ -90,6 +90,11 @@ pub fn draw_info_section<B: Backend>(f: &mut Frame<B>, area: Rect, state: &AppSt
                 "r (Refresh)",
                 Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
             ),
+            Span::raw(", "),
+            Span::styled(
+                "o (open)",
+                Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+            ),
         ]))
         .alignment(Alignment::Center),
         sub_chunck[1],

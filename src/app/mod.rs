@@ -16,7 +16,7 @@ use crate::{
     ui::{
         components::{
             list_with_state::ListWithState,
-            message::{Message, MessageAction},
+            message::{Message, MessageAction, MessageType},
         },
         ui,
     },
@@ -98,9 +98,20 @@ pub fn run_app<B: Backend>(
         if event::poll(Duration::from_millis(refresh_rate))? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
-                    KeyCode::Char('q') => return Ok(()),
                     KeyCode::Up => state.prev_item(),
                     KeyCode::Down => state.next_item(),
+                    KeyCode::Char('q') => return Ok(()),
+                    KeyCode::Char('o') => {
+                        let path_to_open = &current_appstate.target_directories.current().path;
+                        if open::that(path_to_open).is_err() {
+                            state.set_message(Some(Message::new(
+                                "Couldn't open path in your file explorer",
+                                MessageType::Warning,
+                                Some(Duration::from_secs(2)),
+                                None,
+                            )))
+                        }
+                    }
                     KeyCode::Char(' ') => state.delete_current_item(),
                     KeyCode::Char('r') => {
                         // to avoid user to spam refresh, which could cause memory issue
