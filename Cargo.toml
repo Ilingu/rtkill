@@ -9,7 +9,7 @@ readme = "README.md"
 repository = "https://github.com/Ilingu/rtkill"
 homepage = "https://github.com/Ilingu/rtkill"
 license-file = "LICENSE"
-keywords = ["target", "rtkill", ""]
+keywords = ["rtkill", "target"]
 categories = ["command-line-interface", "filesystem"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
