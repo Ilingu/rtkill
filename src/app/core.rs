@@ -152,24 +152,42 @@ fn find_target_dirs(path: String, tx: Sender<TraverseMsg>) {
             thread::scope(|s| {
                 s.spawn(move || -> Result<()> {
                     let toml_values = fs::read_to_string(cargo_toml.path())?.parse::<Table>()?;
-                    let package_info = toml_values
-                        .iter()
-                        .find(|(key, val)| key == &&"package".to_string() && val.is_table())
-                        .ok_or(anyhow!("Cannot find package"))?
-                        .1
-                        .as_table()
-                        .ok_or(anyhow!("Cannot parse package"))?;
-                    let project_name = package_info
-                        .iter()
-                        .find(|(key, val)| key == &&"name".to_string() && val.is_str())
-                        .map(|(_, val)| val.as_str().unwrap().to_string())
-                        .ok_or(anyhow!(""))?;
 
-                    let path = target.path().to_str().unwrap_or_default().to_string();
+                    let package = toml_values
+                        .iter()
+                        .find(|(key, val)| key == &&"package".to_string() && val.is_table());
+                    let workspace = toml_values
+                        .iter()
+                        .find(|(key, val)| key == &&"workspace".to_string() && val.is_table());
+
+                    let project_name = match (package, workspace) {
+                        (None, Some(_)) => path
+                            .split('/')
+                            .last()
+                            .ok_or(anyhow!("No path"))?
+                            .to_string(),
+                        (Some(package), None) => {
+                            let package_info = package
+                                .1
+                                .as_table()
+                                .ok_or(anyhow!("Cannot parse package"))?;
+                            package_info
+                                .iter()
+                                .find(|(key, val)| key == &&"name".to_string() && val.is_str())
+                                .map(|(_, val)| val.as_str().unwrap().to_string())
+                                .ok_or(anyhow!(""))?
+                        }
+                        _ => return Err(anyhow!("No package or workspace found")),
+                    };
+
                     let metadata = target.metadata()?;
-
                     let last_modified: DateTime<Utc> = metadata.modified()?.into();
 
+                    let path = target
+                        .path()
+                        .to_str()
+                        .ok_or(anyhow!("No path"))?
+                        .to_string();
                     let folder_size = fs_extra::dir::get_size(&path)?;
                     let formated_size = bytes_len_to_string_prefix(folder_size);
 
